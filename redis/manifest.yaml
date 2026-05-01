@@ -1,0 +1,70 @@
+--- # create a service for redis
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: roboshop
+spec:
+  selector:
+    project: roboshop
+    component: redis
+    tier: database
+  ports:
+    - ptorocol: TCP
+      port: 6379
+      targetPort: 6379
+
+--- # Create a headless service for redis
+apiVersion: v1
+kind: Service
+metada:
+  name: redis-headless
+  namespace: roboshop
+spec:
+  clusterIP: None
+  selector:
+    project: roboshop
+    component: redis
+    tier: database
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+
+--- # Create a statefulset for redis
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: roboshop
+spec:
+  selector:
+    matchLabels:
+      project: roboshop
+      component: redis
+      tier: database
+  serviceName: "redis-headless"  # This should be the name of the headless service
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        component: redis
+        tier: database
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0
+          volumeMounts:
+            - name: redis
+              mountPath: /data
+  # This is PVC
+  volumeClaimTemplates:
+    - metadata:
+        name: redis
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "roboshop-ebs"
+        resources:
+          requests:
+            storage: 2Gi
