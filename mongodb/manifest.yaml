@@ -1,0 +1,72 @@
+# Service, Headless Service, statefulset, PVC
+
+--- # create service
+apiVersion: v1
+kind: Service
+meatadata:
+  name: mongodb
+  namespace: roboshop
+spec:
+  selector:
+    project: roboshop
+    component: mongodb
+    tier: database
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+--- # create headless service
+apiVersion: v1
+kind: Service
+meatadata:
+  name: mongodb-headless
+  namespace: roboshop
+spec:
+  clusterIP: None
+  selector:
+    project: roboshop
+    component: mongodb
+    tier: database
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+--- # create statefulset
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: roboshop
+spec:
+  serviceName: mongodb-headless
+  replicas: 2
+  selector:
+    matchLabels:
+      project: roboshop
+      component: mongodb
+      tier: database
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        component: mongodb
+        tier: database
+    spec:
+      containers:
+        - name: mongodb
+          image: joindevops/mongodb:v1
+          volumeMounts:
+            - name: mongodb
+              mountPath: /data/db
+  # This is PVC... This will create 2 PVCs with name mongodb-0 and mongodb-1
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "roboshop-ebs"
+      resources:
+        requests:
+          storage: 5Gi
