@@ -3,7 +3,7 @@
 --- # create service
 apiVersion: v1
 kind: Service
-meatadata:
+metadata:
   name: mongodb
   namespace: roboshop
 spec:
@@ -19,7 +19,7 @@ spec:
 --- # create headless service
 apiVersion: v1
 kind: Service
-meatadata:
+metadata:
   name: mongodb-headless
   namespace: roboshop
 spec:
