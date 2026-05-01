@@ -10,14 +10,14 @@ spec:
     component: redis
     tier: database
   ports:
-    - ptorocol: TCP
+    - protocol: TCP
       port: 6379
       targetPort: 6379
 
 --- # Create a headless service for redis
 apiVersion: v1
 kind: Service
-metada:
+metadata:
   name: redis-headless
   namespace: roboshop
 spec:
