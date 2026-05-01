@@ -1,0 +1,89 @@
+--- # Create a configmap for MySQL configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql
+  namespace: roboshop
+data:
+  my.cnf: |
+    [mysqld]
+    innodb_redo_log_capacity= 2G
+
+--- #Create a service for MySQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: roboshop
+spec:
+  selector:
+    project: roboshop
+    component: mysql
+    tier: database
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+--- # Create a headless service for MySQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-headless
+  namespace: roboshop 
+spec:
+  clusterIP: None
+  selector:
+    project: roboshop
+    component: mysql
+    tier: database
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  
+--- # Create a statefulset for MySQL
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: roboshop
+spec:
+  selector:
+    matchLabels:
+      project: roboshop
+      component: mysql
+      tier: database
+  serviceName: mysql-headless # This is the headless service created above
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        component: mysql
+        tier: database
+    spec:
+      containers:
+        - name: mysql
+          image: joindevops/mysql:v1
+          volumeMounts:
+          - name: mysql
+            mountPath: /data/db
+          - name: mysql-config
+            mountPath: /etc/mysql/conf.d/my.cnf
+            subPath: my.cnf
+      volumes:
+        - name: mysql-config
+          configMap:
+            name: mysql
+
+--- # Create a PVC for MySQL
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "roboshop-ebs"
+      resources:
+        requests:
+          storage: 2Gi
