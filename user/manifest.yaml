@@ -74,7 +74,7 @@ metadata:
     component: user
     tier: backend
 spec:
-  selectors:
+  selector:
     project: roboshop
     component: user
     tier: backend
