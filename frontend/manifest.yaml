@@ -93,7 +93,7 @@ spec:
         component: frontend
         tier: frontend
     spec:
-    - containers:
+      containers:
       - name: frontend
         image: joindevops/frontend:v1
         imagePullPolicy: Always
