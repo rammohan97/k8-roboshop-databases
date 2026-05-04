@@ -124,10 +124,10 @@ spec:
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
-    volumes:
-    - name: nginx-config
-      configMap:
-        name: frontend
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: frontend
   
 --- # Create service for frontend
 apiVersion: v1
